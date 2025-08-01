@@ -1,0 +1,16 @@
+{
+  "name": "chat-server",
+  "version": "1.0.0",
+  "description": "Real-time chat backend",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "express": "^4.18.2",
+    "express-session": "^1.17.3",
+    "mongoose": "^7.2.2",
+    "socket.io": "^4.7.2"
+  }
+}
