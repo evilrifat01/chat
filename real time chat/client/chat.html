@@ -1,22 +1,37 @@
 <!DOCTYPE html>
 <html>
-<head><title>Chat</title></head>
+<head>
+  <title>Chat</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    #messages { list-style-type: none; padding: 0; max-height: 300px; overflow-y: auto; border: 1px solid #ccc; margin-bottom: 10px; }
+    #messages li { padding: 5px 10px; border-bottom: 1px solid #eee; }
+    form { display: flex; }
+    input { flex-grow: 1; padding: 10px; font-size: 1rem; }
+    button { padding: 10px; font-size: 1rem; }
+  </style>
+</head>
 <body>
   <ul id="messages"></ul>
   <form id="form">
-    <input id="input" autocomplete="off" /><button>Send</button>
+    <input id="input" autocomplete="off" placeholder="Type your message..." /><button type="submit">Send</button>
   </form>
+
+  <!-- Use this Socket.IO client script URL if hosting backend & frontend together -->
   <script src="/socket.io/socket.io.js"></script>
+
   <script>
+    // Connect Socket.IO client to the current host (works if frontend served by backend)
     const socket = io();
+
     const form = document.getElementById('form');
     const input = document.getElementById('input');
     const messages = document.getElementById('messages');
 
     form.addEventListener('submit', function(e) {
       e.preventDefault();
-      if (input.value) {
-        socket.emit('chat message', input.value);
+      if (input.value.trim() !== '') {
+        socket.emit('chat message', input.value.trim());
         input.value = '';
       }
     });
@@ -25,6 +40,7 @@
       const item = document.createElement('li');
       item.textContent = msg;
       messages.appendChild(item);
+      messages.scrollTop = messages.scrollHeight; // Auto scroll down
     });
   </script>
 </body>
