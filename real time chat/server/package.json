@@ -1,46 +1,17 @@
-const express = require('express');
-const mongoose = require('mongoose');
-const cors = require('cors');
-const http = require('http');
-const { Server } = require('socket.io');
-
-const app = express();
-const server = http.createServer(app);
-const io = new Server(server, {
-  cors: {
-    origin: "*"
+{
+  "name": "chat-server",
+  "version": "1.0.0",
+  "description": "Real-time chat backend",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "express": "^4.18.2",
+    "express-session": "^1.17.3",
+    "mongoose": "^7.2.2",
+    "socket.io": "^4.7.2",
+    "cors": "^2.8.5"
   }
-});
-
-// Middleware
-app.use(cors());
-app.use(express.json());
-
-// MongoDB connection
-mongoose.connect(process.env.MONGODB_URI)
-  .then(() => console.log('✅ MongoDB connected'))
-  .catch((err) => console.error('❌ MongoDB connection error:', err));
-
-// Example route
-app.get('/', (req, res) => {
-  res.send('🎉 Chat server is running');
-});
-
-// Socket.io setup
-io.on('connection', (socket) => {
-  console.log(`🟢 New client connected: ${socket.id}`);
-
-  socket.on('chat message', (msg) => {
-    io.emit('chat message', msg);
-  });
-
-  socket.on('disconnect', () => {
-    console.log(`🔴 Client disconnected: ${socket.id}`);
-  });
-});
-
-// Start server
-const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
-});
+}
