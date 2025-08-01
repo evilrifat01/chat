@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Chat</title>
+  <title>Chat with Usernames</title>
   <style>
     body { font-family: Arial, sans-serif; margin: 20px; }
     #messages { list-style-type: none; padding: 0; max-height: 300px; overflow-y: auto; border: 1px solid #ccc; margin-bottom: 10px; }
@@ -17,11 +17,13 @@
     <input id="input" autocomplete="off" placeholder="Type your message..." /><button type="submit">Send</button>
   </form>
 
-  <!-- Use this Socket.IO client script URL if hosting backend & frontend together -->
   <script src="/socket.io/socket.io.js"></script>
-
   <script>
-    // Connect Socket.IO client to the current host (works if frontend served by backend)
+    let username = prompt("Enter your username:");
+    if (!username) {
+      username = "Anonymous";
+    }
+
     const socket = io();
 
     const form = document.getElementById('form');
@@ -31,16 +33,16 @@
     form.addEventListener('submit', function(e) {
       e.preventDefault();
       if (input.value.trim() !== '') {
-        socket.emit('chat message', input.value.trim());
+        socket.emit('chat message', { username, text: input.value.trim() });
         input.value = '';
       }
     });
 
     socket.on('chat message', function(msg) {
       const item = document.createElement('li');
-      item.textContent = msg;
+      item.textContent = `${msg.username}: ${msg.text}`;
       messages.appendChild(item);
-      messages.scrollTop = messages.scrollHeight; // Auto scroll down
+      messages.scrollTop = messages.scrollHeight;
     });
   </script>
 </body>
