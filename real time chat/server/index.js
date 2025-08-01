@@ -16,23 +16,22 @@ const io = new Server(server, {
 app.use(express.json());
 app.use(cors());
 
-// Serve static frontend files from ../client folder
+// Serve static frontend files
 app.use(express.static(path.join(__dirname, '../client')));
 
 mongoose.connect(process.env.MONGODB_URI)
   .then(() => console.log('✅ MongoDB connected'))
   .catch((err) => console.error('❌ MongoDB connection error:', err));
 
-// Example route (optional)
 app.get('/api/status', (req, res) => {
   res.send('Server is running');
 });
 
-// Socket.IO events
 io.on('connection', (socket) => {
   console.log(`🟢 New client connected: ${socket.id}`);
 
   socket.on('chat message', (msg) => {
+    // msg = { username: 'Alice', text: 'Hello!' }
     io.emit('chat message', msg);
   });
 
