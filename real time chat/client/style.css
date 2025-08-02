@@ -1,196 +1,200 @@
-/* General reset and base */
+/* Reset & Base */
 * {
+  margin: 0;
+  padding: 0;
   box-sizing: border-box;
 }
 
 body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background-color: #f0f2f5;
-  margin: 0;
-  padding: 0;
-  height: 100vh;
+  font-family: Arial, sans-serif;
+  background: #f0f0f0;
+  color: #222;
   display: flex;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
+  height: 100vh;
+  transition: background 0.3s, color 0.3s;
 }
 
+/* Dark Mode */
+body.dark {
+  background: #121212;
+  color: #f0f0f0;
+}
+
+button {
+  padding: 8px 12px;
+  margin: 4px;
+  border: none;
+  border-radius: 5px;
+  background-color: #4caf50;
+  color: white;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+button:hover {
+  background-color: #45a049;
+}
+
+/* Chat UI */
 .chat-container {
+  width: 100%;
+  max-width: 600px;
+  height: 90vh;
   display: flex;
   flex-direction: column;
-  height: 90vh;
-  max-width: 600px;
-  width: 100%;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  background: white;
-  box-shadow: 0 4px 12px rgb(0 0 0 / 0.1);
-}
-
-/* Header styles */
-.chat-container header {
-  padding: 15px 20px;
-  background: #0084ff;
-  color: white;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-radius: 8px 8px 0 0;
-}
-
-.chat-container header h2 {
-  margin: 0;
-  font-weight: 700;
-  font-size: 1.5rem;
-}
-
-.chat-container header button {
-  background: #005bb5;
-  border: none;
-  color: white;
-  padding: 8px 14px;
-  font-size: 1rem;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-}
-
-.chat-container header button:hover {
-  background: #003d80;
-}
-
-.chat-container header > div {
-  display: flex;
-  gap: 10px;
-}
-
-/* Messages area */
-.messages {
-  flex: 1 1 auto;
-  padding: 15px 20px;
-  overflow-y: auto;
-  background-color: #f5f7fa;
-  font-size: 1rem;
-}
-
-/* Single message style */
-.message {
-  margin-bottom: 10px;
-  padding: 8px 12px;
-  background: #e1e8ff;
-  border-radius: 10px;
-  max-width: 80%;
-  word-wrap: break-word;
-  box-shadow: 0 1px 3px rgb(0 0 0 / 0.1);
-}
-
-.message strong {
-  color: #0645ad;
-}
-
-/* Typing status style */
-#typingStatus {
-  font-style: italic;
-  color: #777;
-  margin-bottom: 10px;
-}
-
-/* Message input form fixed at bottom */
-#messageForm {
-  display: flex;
-  padding: 15px 20px;
-  background: #fff;
-  border-top: 1px solid #ddd;
-  flex-shrink: 0;
-}
-
-/* Text input styles */
-#messageInput {
-  flex-grow: 1;
-  padding: 12px 15px;
-  font-size: 1rem;
   border: 1px solid #ccc;
-  border-radius: 25px;
-  outline: none;
-  transition: border-color 0.2s ease;
-}
-
-#messageInput:focus {
-  border-color: #0084ff;
-}
-
-/* Send button */
-#messageForm button {
-  margin-left: 15px;
-  padding: 12px 25px;
-  background: #0084ff;
-  border: none;
-  color: white;
-  font-weight: 600;
-  font-size: 1rem;
-  border-radius: 25px;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-}
-
-#messageForm button:hover {
-  background: #005bb5;
-}
-
-/* Dark mode support */
-body.dark {
-  background-color: #121212;
-  color: #ddd;
+  border-radius: 10px;
+  background: white;
+  overflow: hidden;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
 }
 
 body.dark .chat-container {
-  background: #222;
+  background: #1e1e1e;
   border-color: #333;
-  box-shadow: 0 4px 12px rgb(255 255 255 / 0.1);
 }
 
-body.dark .chat-container header {
-  background: #005bb5;
-  color: #eee;
+header {
+  padding: 15px;
+  background-color: #007bff;
+  color: white;
+  font-size: 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
-body.dark .chat-container header button {
-  background: #003d80;
-}
-
-body.dark .chat-container header button:hover {
-  background: #002050;
+.messages {
+  flex: 1;
+  padding: 10px;
+  overflow-y: auto;
+  background-color: #fafafa;
 }
 
 body.dark .messages {
-  background-color: #1a1a1a;
-  color: #ccc;
+  background: #2c2c2c;
+}
+
+.message {
+  margin: 5px 0;
+  padding: 6px 10px;
+  border-radius: 4px;
+  background-color: #e1f5fe;
 }
 
 body.dark .message {
-  background: #004080;
-  color: #eee;
-  box-shadow: 0 1px 3px rgb(255 255 255 / 0.1);
-}
-
-body.dark #messageForm {
-  background: #111;
-  border-top-color: #333;
-}
-
-body.dark #messageInput {
-  background: #222;
-  border-color: #005bb5;
+  background-color: #333;
   color: #eee;
 }
 
-body.dark #messageInput:focus {
-  border-color: #3399ff;
+#messageForm {
+  display: flex;
+  padding: 10px;
+  border-top: 1px solid #ccc;
 }
 
-body.dark #messageForm button {
-  background: #3399ff;
+#messageForm input {
+  flex: 1;
+  padding: 10px;
+  border: 1px solid #aaa;
+  border-radius: 5px;
+  font-size: 16px;
 }
 
-body.dark #messageForm button:hover {
-  background: #005bb5;
+#messageForm button {
+  margin-left: 10px;
+  font-size: 16px;
+}
+
+/* Form (Register / Login) */
+.form-container {
+  width: 100%;
+  max-width: 400px;
+  background: white;
+  padding: 30px;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  text-align: center;
+}
+
+body.dark .form-container {
+  background: #1f1f1f;
+}
+
+.form-container h2 {
+  margin-bottom: 20px;
+}
+
+.form-container form {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-container input {
+  padding: 10px;
+  margin: 8px 0;
+  border: 1px solid #aaa;
+  border-radius: 5px;
+  font-size: 16px;
+}
+
+.form-container .g-recaptcha {
+  margin: 10px 0;
+}
+
+.form-container button {
+  margin-top: 10px;
+  font-size: 16px;
+}
+
+/* Admin Panel */
+.admin-container {
+  width: 100%;
+  max-width: 500px;
+  background: white;
+  padding: 30px;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+body.dark .admin-container {
+  background: #1f1f1f;
+}
+
+.admin-container ul {
+  list-style-type: none;
+  margin-top: 10px;
+}
+
+.admin-container li {
+  padding: 10px;
+  border-bottom: 1px solid #ccc;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.admin-container li button {
+  margin-left: 10px;
+}
+
+/* Small Screens */
+@media (max-width: 600px) {
+  .chat-container,
+  .form-container,
+  .admin-container {
+    height: 100vh;
+    border-radius: 0;
+  }
+
+  header h2 {
+    font-size: 16px;
+  }
+
+  button {
+    padding: 6px 10px;
+    font-size: 14px;
+  }
 }
