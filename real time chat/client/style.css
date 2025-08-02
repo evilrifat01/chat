@@ -69,3 +69,21 @@ header {
   align-items: center;
   margin-bottom: 1rem;
 }
+
+body.dark {
+  background-color: #121212;
+  color: #eee;
+}
+
+body.dark .chat-container {
+  background: #1e1e1e;
+  box-shadow: 0 5px 15px rgba(255,255,255,0.05);
+}
+
+body.dark input,
+body.dark button,
+body.dark .messages {
+  background: #333;
+  color: #eee;
+  border: 1px solid #444;
+}
