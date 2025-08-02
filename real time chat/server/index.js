@@ -7,6 +7,7 @@ const path = require('path');
 const http = require('http');
 const { Server } = require('socket.io');
 const bcrypt = require('bcryptjs');
+const axios = require('axios'); // for reCAPTCHA
 
 const app = express();
 const server = http.createServer(app);
@@ -32,6 +33,9 @@ app.use(session({
   }
 }));
 
+// Replace with your Google reCAPTCHA secret key
+const RECAPTCHA_SECRET_KEY = '6Lcj8ZcrAAAAABfPOY2wVSslZwwI2TXG16ak7r1N';
+
 // User Schema
 const User = mongoose.model('User', new mongoose.Schema({
   username: String,
@@ -54,9 +58,30 @@ app.get('/api/session', (req, res) => {
   }
 });
 
-// Register route
+// Register route with reCAPTCHA
 app.post('/api/register', async (req, res) => {
-  const { username, password } = req.body;
+  const { username, password, token } = req.body;
+
+  // Validate reCAPTCHA token with Google
+  try {
+    const response = await axios.post(
+      `https://www.google.com/recaptcha/api/siteverify`,
+      null,
+      {
+        params: {
+          secret: RECAPTCHA_SECRET_KEY,
+          response: token,
+        },
+      }
+    );
+
+    if (!response.data.success) {
+      return res.status(400).send('CAPTCHA verification failed');
+    }
+  } catch (err) {
+    return res.status(500).send('Error verifying CAPTCHA');
+  }
+
   const exists = await User.findOne({ username });
   if (exists) return res.status(400).send('User already exists');
 
