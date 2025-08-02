@@ -111,5 +111,16 @@ io.on('connection', socket => {
   socket.on('stop typing', user => socket.broadcast.emit('stop typing', user));
 });
 
+// Auto-delete messages older than 1 hour every 10 minutes
+setInterval(async () => {
+  const cutoff = new Date(Date.now() - 60 * 60 * 1000); // 1 hour ago
+  const result = await Message.deleteMany({ timestamp: { $lt: cutoff } });
+  if (result.deletedCount > 0) {
+    console.log(`🗑 Deleted ${result.deletedCount} old messages`);
+  }
+}, 10 * 60 * 1000); // Run every 10 minutes
+
+
 const PORT = process.env.PORT || 10000;
 server.listen(PORT, () => console.log(`🚀 Listening on port ${PORT}`));
+
