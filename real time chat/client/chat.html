@@ -1,59 +1,64 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Chat</title>
-  <style>
-    body { font-family: sans-serif; }
-    #messages { list-style: none; padding: 0; }
-    #messages li { padding: 5px 10px; }
-  </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Chat Room</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <h2>Chat Room</h2>
-  <ul id="messages"></ul>
-  <form id="form">
-    <input id="input" autocomplete="off" placeholder="Type message..." /><button>Send</button>
-  </form>
-  <button onclick="logout()">Logout</button>
+  <div class="chat-container">
+    <header>
+      <h2>Chat Room</h2>
+      <button onclick="logout()">Logout</button>
+    </header>
+    <div id="messages" class="messages"></div>
+    <form id="messageForm">
+      <input type="text" id="messageInput" placeholder="Type your message..." autocomplete="off" required />
+      <button type="submit">Send</button>
+    </form>
+  </div>
 
-  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+  <script src="/socket.io/socket.io.js"></script>
   <script>
     const socket = io();
-    const username = localStorage.getItem('username');
-    const form = document.getElementById('form');
-    const input = document.getElementById('input');
-    const messages = document.getElementById('messages');
+    let username = "";
 
-    if (!username) {
-      location.href = 'login.html';
-    }
+    fetch('/api/session')
+      .then(res => res.json())
+      .then(data => {
+        if (!data.username) location.href = 'login.html';
+        username = data.username;
+      });
 
     fetch('/api/messages')
       .then(res => res.json())
-      .then(data => {
-        data.forEach(m => addMessage(m.sender, m.content));
+      .then(messages => {
+        const msgBox = document.getElementById('messages');
+        messages.forEach(msg => addMessage(msg));
       });
 
-    socket.on('chat message', (msg) => {
-      addMessage(msg.sender, msg.content);
-    });
-
-    form.addEventListener('submit', function(e) {
+    document.getElementById('messageForm').onsubmit = (e) => {
       e.preventDefault();
-      if (input.value.trim()) {
-        socket.emit('chat message', { sender: username, content: input.value });
-        input.value = '';
-      }
+      const content = document.getElementById('messageInput').value;
+      socket.emit('chat message', { sender: username, content });
+      document.getElementById('messageInput').value = '';
+    };
+
+    socket.on('chat message', (msg) => {
+      addMessage(msg);
     });
 
-    function addMessage(sender, content) {
-      const item = document.createElement('li');
-      item.textContent = `${sender}: ${content}`;
-      messages.appendChild(item);
+    function addMessage(msg) {
+      const msgBox = document.getElementById('messages');
+      const div = document.createElement('div');
+      div.classList.add('message');
+      div.innerHTML = `<strong>${msg.sender}</strong>: ${msg.content}`;
+      msgBox.appendChild(div);
+      msgBox.scrollTop = msgBox.scrollHeight;
     }
 
     function logout() {
-      localStorage.removeItem('username');
       fetch('/api/logout').then(() => location.href = 'login.html');
     }
   </script>
