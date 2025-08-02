@@ -1,91 +1,100 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Real-time Chat</title>
-  <style>
-    body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: #f4f4f4; }
-    #chat { max-width: 600px; margin: 40px auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-    #messages { list-style-type: none; padding: 0; max-height: 300px; overflow-y: scroll; border: 1px solid #ccc; border-radius: 4px; margin-bottom: 10px; }
-    #messages li { padding: 8px; border-bottom: 1px solid #eee; }
-    #messages li:last-child { border-bottom: none; }
-    #form { display: flex; }
-    #input { flex: 1; padding: 10px; font-size: 16px; border-radius: 4px 0 0 4px; border: 1px solid #ccc; border-right: none; }
-    #send { padding: 10px 20px; background: #28a745; color: white; border: none; font-size: 16px; cursor: pointer; border-radius: 0 4px 4px 0; }
-    #send:hover { background: #218838; }
-    #logout { margin-top: 20px; text-align: center; }
-    #logout button { padding: 8px 16px; background: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer; }
-  </style>
-</head>
-<body>
-  <div id="chat">
-    <h2>Welcome to Chat Room</h2>
-    <ul id="messages"></ul>
-    <form id="form">
-      <input id="input" autocomplete="off" placeholder="Type a message..." /><button id="send">Send</button>
-    </form>
-    <div id="logout">
-      <button onclick="logout()">Logout</button>
-    </div>
-  </div>
+const express = require('express');
+const mongoose = require('mongoose');
+const cors = require('cors');
+const session = require('express-session');
+const path = require('path');
+const http = require('http');
+const { Server } = require('socket.io');
+const bcrypt = require('bcryptjs');
 
-  <script src="/socket.io/socket.io.js"></script>
-  <script>
-    const socket = io();
-    let username = '';
+const app = express();
+const server = http.createServer(app);
+const io = new Server(server);
 
-    // Fetch session user
-    fetch('/api/session')
-      .then(res => res.json())
-      .then(data => {
-        if (!data.username) {
-          window.location.href = '/';
-        } else {
-          username = data.username;
-          initChat();
-        }
-      })
-      .catch(() => window.location.href = '/');
+mongoose.connect('mongodb+srv://refat:refat97113@cluster0.q42r8kx.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0')
+  .then(() => console.log('✅ MongoDB connected'))
+  .catch((err) => console.error('❌ MongoDB connection error:', err));
 
-    function initChat() {
-      const form = document.getElementById('form');
-      const input = document.getElementById('input');
-      const messages = document.getElementById('messages');
+app.use(express.json());
+app.use(cors());
+app.use(express.static(path.join(__dirname, '../client')));
 
-      // Load chat history
-      fetch('/api/messages')
-        .then(res => res.json())
-        .then(data => {
-          data.forEach(msg => {
-            const item = document.createElement('li');
-            item.textContent = `${msg.sender}: ${msg.content}`;
-            messages.appendChild(item);
-          });
-          messages.scrollTop = messages.scrollHeight;
-        });
+app.use(session({
+  secret: 'secret-key',
+  resave: false,
+  saveUninitialized: true
+}));
 
-      // Send message
-      form.addEventListener('submit', (e) => {
-        e.preventDefault();
-        if (input.value) {
-          socket.emit('chat message', { sender: username, content: input.value });
-          input.value = '';
-        }
-      });
+// User Schema
+const User = mongoose.model('User', new mongoose.Schema({
+  username: String,
+  password: String
+}));
 
-      // Receive message
-      socket.on('chat message', (msg) => {
-        const item = document.createElement('li');
-        item.textContent = `${msg.sender}: ${msg.content}`;
-        messages.appendChild(item);
-        messages.scrollTop = messages.scrollHeight;
-      });
-    }
+// Message Schema
+const Message = mongoose.model('Message', new mongoose.Schema({
+  sender: String,
+  content: String,
+  timestamp: { type: Date, default: Date.now }
+}));
 
-    function logout() {
-      fetch('/api/logout')
-        .then(() => window.location.href = '/');
-    }
-  </script>
-</body>
-</html>
+// Session route to get current logged-in user
+app.get('/api/session', (req, res) => {
+  if (req.session && req.session.user) {
+    res.json({ username: req.session.user });
+  } else {
+    res.json({ username: null });
+  }
+});
+
+// Register route
+app.post('/api/register', async (req, res) => {
+  const { username, password } = req.body;
+  const exists = await User.findOne({ username });
+  if (exists) return res.status(400).send('User already exists');
+
+  const hashed = await bcrypt.hash(password, 10);
+  await User.create({ username, password: hashed });
+  res.sendStatus(200);
+});
+
+// Login route
+app.post('/api/login', async (req, res) => {
+  const { username, password } = req.body;
+  const user = await User.findOne({ username });
+  if (!user) return res.status(401).send('Invalid credentials');
+  const valid = await bcrypt.compare(password, user.password);
+  if (!valid) return res.status(401).send('Invalid credentials');
+
+  req.session.user = user.username;
+  res.sendStatus(200);
+});
+
+// Logout route
+app.get('/api/logout', (req, res) => {
+  req.session.destroy();
+  res.sendStatus(200);
+});
+
+// Fetch messages
+app.get('/api/messages', async (req, res) => {
+  const messages = await Message.find().sort({ timestamp: 1 });
+  res.json(messages);
+});
+
+// Socket.io chat message handling
+io.on('connection', (socket) => {
+  console.log('🟢 A user connected');
+
+  socket.on('chat message', async ({ sender, content }) => {
+    const message = await Message.create({ sender, content });
+    io.emit('chat message', message);
+  });
+
+  socket.on('disconnect', () => {
+    console.log('🔴 A user disconnected');
+  });
+});
+
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, () => console.log(`🚀 Server running at http://localhost:${PORT}`));
