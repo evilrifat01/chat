@@ -1,5 +1,5 @@
 <!DOCTYPE html><html><head>
-<meta charset="UTF-8"><title>Admin Dashboard</title>
+<meta charset="UTF-8"><title>Admin</title>
 <link rel="stylesheet" href="style.css">
 </head><body>
 <div class="form-container">
@@ -13,18 +13,20 @@ async function load() {
   ul.innerHTML = '';
   list.forEach(u => {
     const li = document.createElement('li');
-    li.innerHTML = `${u.username}
+    li.innerHTML = `${u.username} 
       <button onclick="approve('${u.username}')">Approve</button>
       <button onclick="del('${u.username}')">Delete</button>`;
     ul.appendChild(li);
   });
 }
 async function approve(name) {
-  await fetch('/api/admin/approve',{method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({username:name})});
+  await fetch('/api/admin/approve',{method:'POST',
+     headers:{'Content-Type':'application/json'},body:JSON.stringify({username:name})});
   load();
 }
 async function del(name) {
-  await fetch('/api/admin/delete',{method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({username:name})});
+  await fetch('/api/admin/delete',{method:'POST',
+     headers:{'Content-Type':'application/json'},body:JSON.stringify({username:name})});
   load();
 }
 load();
