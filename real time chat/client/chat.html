@@ -9,13 +9,11 @@
 <body>
   <div class="chat-container">
     <header>
-      <div style="display: flex; justify-content: space-between; align-items: center;">
-        <h2>Chat Room</h2>
-        <div>
-          <span id="userDisplay" style="margin-right: 15px; font-weight: bold;"></span>
-          <button onclick="toggleDarkMode()">🌙</button>
-          <button onclick="logout()">Logout</button>
-        </div>
+      <h2>Chat Room</h2>
+      <div style="display: flex; gap: 10px; align-items: center;">
+        <span id="usernameDisplay" style="font-weight: bold;"></span>
+        <button onclick="toggleDarkMode()">🌙</button>
+        <button onclick="logout()">Logout</button>
       </div>
     </header>
 
@@ -43,9 +41,9 @@
     fetch('/api/session')
       .then(res => res.json())
       .then(data => {
-        if (!data.username) return location.href = 'login.html';
+        if (!data.username) location.href = 'login.html';
         username = data.username;
-        document.getElementById('userDisplay').textContent = `Logged in as: ${username}`;
+        document.getElementById('usernameDisplay').textContent = username;
       });
 
     // Load old messages
