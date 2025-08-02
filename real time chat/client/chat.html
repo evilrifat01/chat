@@ -11,27 +11,30 @@
     <header>
       <h2>Chat Room</h2>
       <div style="display: flex; gap: 10px;">
-        <button onclick="toggleDarkMode()">🎨</button>
+        <button onclick="toggleDarkMode()">🌙</button>
         <button onclick="logout()">Logout</button>
       </div>
     </header>
 
     <div class="chat-main">
-      <!-- Messages -->
-      <div class="messages-section">
+      <!-- Users List -->
+      <div class="users-list">
+        <h3>🟢 Online</h3>
+        <ul id="onlineUsers"></ul>
+      </div>
+
+      <!-- Chat Section -->
+      <div class="chat-section">
         <div id="messages" class="messages">
           <div id="typingStatus" class="message" style="font-style: italic;"></div>
         </div>
         <form id="messageForm">
+          <select id="receiverSelect">
+            <option value="">Public</option>
+          </select>
           <input type="text" id="messageInput" placeholder="Type your message..." autocomplete="off" required />
           <button type="submit">Send</button>
         </form>
-      </div>
-
-      <!-- Online Users -->
-      <div class="users-section">
-        <h3>Online Users 🟢</h3>
-        <ul id="onlineUsers" class="user-list"></ul>
       </div>
     </div>
   </div>
@@ -39,14 +42,16 @@
   <script src="/socket.io/socket.io.js"></script>
   <script>
     const socket = io();
-    let username = "", typing = false, timeout;
-    let privateTo = null;
-
-    const msgBox = document.getElementById('messages');
-    const input = document.getElementById('messageInput');
-    const usersList = document.getElementById('onlineUsers');
+    let username = "";
+    let typing = false;
+    let timeout;
+    const messageInput = document.getElementById('messageInput');
+    const messagesBox = document.getElementById('messages');
+    const onlineUsersList = document.getElementById('onlineUsers');
+    const receiverSelect = document.getElementById('receiverSelect');
     const notify = new Audio("https://notificationsounds.com/notification-sounds/event-538/download/mp3");
 
+    // Get session info
     fetch('/api/session')
       .then(res => res.json())
       .then(data => {
@@ -55,20 +60,33 @@
         socket.emit('join', username);
       });
 
+    // Load public messages
     fetch('/api/messages')
       .then(res => res.json())
-      .then(messages => messages.forEach(addMessage));
+      .then(messages => {
+        messages.forEach(addMessage);
+      });
 
+    // Submit message
     document.getElementById('messageForm').onsubmit = (e) => {
       e.preventDefault();
-      const content = input.value.trim();
+      const content = messageInput.value.trim();
+      const receiver = receiverSelect.value;
+
       if (!content) return;
-      socket.emit('chat message', { sender: username, content, to: privateTo });
-      input.value = '';
+
+      if (receiver) {
+        socket.emit('private message', { sender: username, receiver, content });
+      } else {
+        socket.emit('chat message', { sender: username, content });
+      }
+
+      messageInput.value = '';
       stopTyping();
     };
 
-    input.addEventListener('input', () => {
+    // Typing
+    messageInput.addEventListener('input', () => {
       if (!typing) {
         typing = true;
         socket.emit('typing', username);
@@ -84,44 +102,56 @@
       socket.emit('stop typing', username);
     }
 
+    // Public message
     socket.on('chat message', (msg) => {
       addMessage(msg);
       if (msg.sender !== username) notify.play();
     });
 
-    socket.on('typing', (user) => {
-      if (user !== username)
-        document.getElementById('typingStatus').textContent = `${user} is typing...`;
+    // Private message
+    socket.on('private message', (msg) => {
+      addMessage(msg, true);
+      if (msg.sender !== username) notify.play();
     });
 
-    socket.on('stop typing', (user) => {
-      if (user !== username)
-        document.getElementById('typingStatus').textContent = '';
-    });
-
+    // Online users
     socket.on('online users', (users) => {
-      usersList.innerHTML = '';
+      onlineUsersList.innerHTML = '';
+      receiverSelect.innerHTML = `<option value="">Public</option>`;
       users.forEach(user => {
-        const li = document.createElement('li');
-        li.textContent = user + (user === username ? ' (you)' : '');
-        li.style.cursor = 'pointer';
         if (user !== username) {
-          li.onclick = () => {
-            privateTo = privateTo === user ? null : user;
-            input.placeholder = privateTo ? `Private to ${privateTo}...` : "Type your message...";
-          };
+          const li = document.createElement('li');
+          li.textContent = user;
+          onlineUsersList.appendChild(li);
+
+          const option = document.createElement('option');
+          option.value = user;
+          option.textContent = `🔒 ${user}`;
+          receiverSelect.appendChild(option);
         }
-        usersList.appendChild(li);
       });
     });
 
-    function addMessage(msg) {
+    // Typing status
+    socket.on('typing', (user) => {
+      if (user !== username) {
+        document.getElementById('typingStatus').textContent = `${user} is typing...`;
+      }
+    });
+    socket.on('stop typing', (user) => {
+      if (user !== username) {
+        document.getElementById('typingStatus').textContent = '';
+      }
+    });
+
+    // Render message
+    function addMessage(msg, isPrivate = false) {
       const div = document.createElement('div');
       div.classList.add('message');
-      const toInfo = msg.to ? `🔒 <em>(to ${msg.to})</em>` : '';
-      div.innerHTML = `<strong>${msg.sender}</strong>${toInfo}: ${msg.content}`;
-      msgBox.appendChild(div);
-      msgBox.scrollTop = msgBox.scrollHeight;
+      const to = msg.receiver ? ` (to ${msg.receiver})` : '';
+      div.innerHTML = `<strong>${msg.sender}${to}</strong>: ${msg.content}`;
+      messagesBox.appendChild(div);
+      messagesBox.scrollTop = messagesBox.scrollHeight;
     }
 
     function logout() {
