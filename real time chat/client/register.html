@@ -1,36 +1,48 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
   <title>Register</title>
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="style.css">
+  <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 </head>
 <body>
-  <div class="auth-container">
+  <div class="form-container">
     <h2>Register</h2>
     <form id="registerForm">
       <input type="text" id="username" placeholder="Username" required />
       <input type="password" id="password" placeholder="Password" required />
+      <div class="g-recaptcha" data-sitekey="6Lcj8ZcrAAAAANVQkVaAIcjErF15bURIF9-53cA4"></div>
       <button type="submit">Register</button>
+      <p id="message"></p>
     </form>
-    <p>Already have an account? <a href="login.html">Login</a></p>
-    <div id="error"></div>
+    <a href="login.html">Already have an account? Login</a>
   </div>
+
   <script>
-    document.getElementById('registerForm').onsubmit = async (e) => {
+    document.getElementById("registerForm").onsubmit = async (e) => {
       e.preventDefault();
-      const username = document.getElementById('username').value;
-      const password = document.getElementById('password').value;
+      const username = document.getElementById("username").value;
+      const password = document.getElementById("password").value;
+      const token = grecaptcha.getResponse();
+
+      if (!token) {
+        document.getElementById("message").textContent = "Please complete the CAPTCHA.";
+        return;
+      }
+
       const res = await fetch('/api/register', {
         method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({ username, password })
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password, token })
       });
+
       if (res.ok) {
-        location.href = 'login.html';
+        location.href = "login.html";
       } else {
-        document.getElementById('error').textContent = 'Register failed';
+        const msg = await res.text();
+        document.getElementById("message").textContent = msg;
+        grecaptcha.reset();
       }
     };
   </script>
