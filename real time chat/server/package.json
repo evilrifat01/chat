@@ -1,7 +1,7 @@
 {
   "name": "chat-server",
   "version": "1.0.0",
-  "description": "Real‑time chat backend",
+  "description": "Real-time chat backend with admin approval and captcha",
   "main": "index.js",
   "scripts": {
     "start": "node index.js"
