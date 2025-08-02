@@ -4,15 +4,15 @@
 <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 </head><body>
 <div class="form-container">
-  <h2>Register</h2>
+  <h2>Create Account</h2>
   <form id="registerForm">
-    <input id="username" placeholder="Username" required>
-    <input id="password" type="password" placeholder="Password" required>
-    <div class="g-recaptcha" data-sitekey="YOUR_SITE_KEY"></div>
+    <input type="text" id="username" placeholder="Username" required>
+    <input type="password" id="password" placeholder="Password" required>
+    <div class="g-recaptcha" data-sitekey="6Lcj8ZcrAAAAANVQkVaAIcjErF15bURIF9-53cA4"></div>
     <button type="submit">Register</button>
     <p id="msg"></p>
   </form>
-  <a href="login.html">Login</a>
+  <a href="login.html">Already registered? Login</a>
 </div>
 <script>
 document.getElementById('registerForm').onsubmit = async e => {
@@ -20,7 +20,7 @@ document.getElementById('registerForm').onsubmit = async e => {
   const token = grecaptcha.getResponse();
   const res = await fetch('/api/register', {
     method: 'POST',
-    headers:{ 'Content-Type':'application/json' },
+    headers: {'Content-Type':'application/json'},
     body: JSON.stringify({
       username: document.getElementById('username').value,
       password: document.getElementById('password').value,
@@ -29,7 +29,7 @@ document.getElementById('registerForm').onsubmit = async e => {
   });
   const text = await res.text();
   document.getElementById('msg').textContent = text;
-  if (res.ok) window.location = 'login.html';
+  if (res.ok) window.location.href = 'login.html';
   else grecaptcha.reset();
 };
 </script>
