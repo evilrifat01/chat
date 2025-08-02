@@ -1,1 +1,5 @@
-MONGO_URI=mongodb+srv://refat:refat97113@cluster0.mongodb.net/chat-app?retryWrites=true&w=majority
+MONGO_URL=mongodb+srv://refat:refat97113@cluster0.q42r8kx.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
+SESSION_SECRET=someverysecretvalue
+RECAPTCHA_SECRET=6Lcj8ZcrAAAAABfPOY2wVSslZwwI2TXG16ak7r1N
+ADMIN_USERNAME=admin
+ADMIN_PASSWORD=adminpass
