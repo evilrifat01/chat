@@ -9,10 +9,13 @@
 <body>
   <div class="chat-container">
     <header>
-      <h2>Chat Room</h2>
-      <div style="display: flex; gap: 10px;">
-        <button onclick="toggleDarkMode()">🌙</button>
-        <button onclick="logout()">Logout</button>
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h2>Chat Room</h2>
+        <div>
+          <span id="userDisplay" style="margin-right: 15px; font-weight: bold;"></span>
+          <button onclick="toggleDarkMode()">🌙</button>
+          <button onclick="logout()">Logout</button>
+        </div>
       </div>
     </header>
 
@@ -40,8 +43,9 @@
     fetch('/api/session')
       .then(res => res.json())
       .then(data => {
-        if (!data.username) location.href = 'login.html';
+        if (!data.username) return location.href = 'login.html';
         username = data.username;
+        document.getElementById('userDisplay').textContent = `Logged in as: ${username}`;
       });
 
     // Load old messages
