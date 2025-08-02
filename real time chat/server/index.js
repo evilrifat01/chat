@@ -44,7 +44,7 @@ const Message = mongoose.model('Message', new mongoose.Schema({
 }));
 
 // Static files
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, '../client')));
 
 // Register route
 app.post('/register', async (req, res) => {
@@ -95,3 +95,4 @@ io.on('connection', async (socket) => {
 
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+
