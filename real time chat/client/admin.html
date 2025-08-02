@@ -1,27 +1,59 @@
-<!DOCTYPE html><html><head>
-<meta charset="UTF-8"><title>Admin Panel</title>
-<link rel="stylesheet" href="style.css">
-</head><body>
-<div class="form-container"><h2>Approve Users</h2><ul id="pending"></ul></div>
-<script>
-async function load(){  
-  const list = await fetch('/api/admin/unapproved').then(r => r.json());
-  const ul = document.getElementById('pending');
-  ul.innerHTML = '';
-  list.forEach(u => {
-    const li = document.createElement('li');
-    li.innerHTML = `${u.username} <button onclick="approve('${u.username}')">✔</button> <button onclick="del('${u.username}')">✖</button>`;
-    ul.appendChild(li);
-  });
-}
-async function approve(name){
-  await fetch('/api/admin/approve', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({username:name})});
-  load();
-}
-async function del(name){
-  await fetch('/api/admin/delete', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({username:name})});
-  load();
-}
-load();
-</script>
-</body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Panel</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="admin-container">
+    <h2>Admin Dashboard</h2>
+    <button onclick="logout()">Logout</button>
+    <h3>Pending Approvals</h3>
+    <ul id="userList"></ul>
+  </div>
+
+  <script>
+    async function loadUsers() {
+      const res = await fetch('/api/admin/unapproved');
+      const users = await res.json();
+      const list = document.getElementById('userList');
+      list.innerHTML = '';
+      users.forEach(user => {
+        const li = document.createElement('li');
+        li.innerHTML = `
+          ${user.username}
+          <button onclick="approve('${user.username}')">Approve</button>
+          <button onclick="remove('${user.username}')">Delete</button>
+        `;
+        list.appendChild(li);
+      });
+    }
+
+    async function approve(username) {
+      await fetch('/api/admin/approve', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username })
+      });
+      loadUsers();
+    }
+
+    async function remove(username) {
+      await fetch('/api/admin/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username })
+      });
+      loadUsers();
+    }
+
+    function logout() {
+      fetch('/api/logout').then(() => location.href = 'login.html');
+    }
+
+    loadUsers();
+  </script>
+</body>
+</html>
