@@ -1,121 +1,60 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Chat with Login</title>
+  <title>Chat</title>
   <style>
-    body { font-family: Arial, sans-serif; margin: 20px; }
-    #messages { list-style-type: none; padding: 0; max-height: 300px; overflow-y: auto; border: 1px solid #ccc; margin-bottom: 10px; }
-    #messages li { padding: 5px 10px; border-bottom: 1px solid #eee; }
-    form { display: flex; margin-bottom: 10px; }
-    input { flex-grow: 1; padding: 10px; font-size: 1rem; }
-    button { padding: 10px; font-size: 1rem; }
-    #loginForm, #chatForm { max-width: 400px; }
+    body { font-family: sans-serif; }
+    #messages { list-style: none; padding: 0; }
+    #messages li { padding: 5px 10px; }
   </style>
 </head>
 <body>
-  <div id="auth">
-    <h2>Login or Register</h2>
-    <form id="loginForm">
-      <input id="username" placeholder="Username" required />
-      <input id="password" type="password" placeholder="Password" required />
-      <button type="submit">Login</button>
-      <button type="button" id="registerBtn">Register</button>
-    </form>
-    <p id="authMsg"></p>
-  </div>
+  <h2>Chat Room</h2>
+  <ul id="messages"></ul>
+  <form id="form">
+    <input id="input" autocomplete="off" placeholder="Type message..." /><button>Send</button>
+  </form>
+  <button onclick="logout()">Logout</button>
 
-  <div id="chat" style="display:none;">
-    <button id="logoutBtn">Logout</button>
-    <ul id="messages"></ul>
-    <form id="chatForm">
-      <input id="input" autocomplete="off" placeholder="Type your message..." />
-      <button type="submit">Send</button>
-    </form>
-  </div>
-
-  <script src="/socket.io/socket.io.js"></script>
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
   <script>
-    const authDiv = document.getElementById('auth');
-    const chatDiv = document.getElementById('chat');
-    const authMsg = document.getElementById('authMsg');
-    const loginForm = document.getElementById('loginForm');
-    const registerBtn = document.getElementById('registerBtn');
-    const logoutBtn = document.getElementById('logoutBtn');
-
-    const chatForm = document.getElementById('chatForm');
+    const socket = io();
+    const username = localStorage.getItem('username');
+    const form = document.getElementById('form');
     const input = document.getElementById('input');
     const messages = document.getElementById('messages');
 
-    let socket;
-    let username;
-
-    // Helper function to handle fetch errors
-    async function postData(url, data) {
-      const resp = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify(data)
-      });
-      return resp;
+    if (!username) {
+      location.href = 'login.html';
     }
 
-    loginForm.addEventListener('submit', async e => {
+    fetch('/api/messages')
+      .then(res => res.json())
+      .then(data => {
+        data.forEach(m => addMessage(m.sender, m.content));
+      });
+
+    socket.on('chat message', (msg) => {
+      addMessage(msg.sender, msg.content);
+    });
+
+    form.addEventListener('submit', function(e) {
       e.preventDefault();
-      username = document.getElementById('username').value.trim();
-      const password = document.getElementById('password').value;
-
-      const res = await postData('/api/login', { username, password });
-      if(res.ok) {
-        startChat();
-      } else {
-        const text = await res.text();
-        authMsg.textContent = 'Login failed: ' + text;
+      if (input.value.trim()) {
+        socket.emit('chat message', { sender: username, content: input.value });
+        input.value = '';
       }
     });
 
-    registerBtn.addEventListener('click', async () => {
-      username = document.getElementById('username').value.trim();
-      const password = document.getElementById('password').value;
-      const res = await postData('/api/register', { username, password });
-      if(res.ok) {
-        authMsg.textContent = 'Registered! You can now login.';
-      } else {
-        const text = await res.text();
-        authMsg.textContent = 'Register failed: ' + text;
-      }
-    });
+    function addMessage(sender, content) {
+      const item = document.createElement('li');
+      item.textContent = `${sender}: ${content}`;
+      messages.appendChild(item);
+    }
 
-    logoutBtn.addEventListener('click', async () => {
-      await postData('/api/logout', {});
-      authDiv.style.display = 'block';
-      chatDiv.style.display = 'none';
-      if(socket) socket.disconnect();
-      authMsg.textContent = '';
-      username = null;
-      messages.innerHTML = '';
-    });
-
-    function startChat() {
-      authDiv.style.display = 'none';
-      chatDiv.style.display = 'block';
-
-      socket = io({ withCredentials: true });
-
-      chatForm.addEventListener('submit', e => {
-        e.preventDefault();
-        if(input.value.trim() !== '') {
-          socket.emit('chat message', { username, text: input.value.trim() });
-          input.value = '';
-        }
-      });
-
-      socket.on('chat message', msg => {
-        const item = document.createElement('li');
-        item.textContent = `${msg.username}: ${msg.text}`;
-        messages.appendChild(item);
-        messages.scrollTop = messages.scrollHeight;
-      });
+    function logout() {
+      localStorage.removeItem('username');
+      fetch('/api/logout').then(() => location.href = 'login.html');
     }
   </script>
 </body>
