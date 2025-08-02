@@ -93,10 +93,20 @@ io.on('connection', (socket) => {
 
   socket.on('disconnect', () => {
     console.log('🔴 A user disconnected');
+  
   });
+  socket.on('typing', (user) => {
+  socket.broadcast.emit('typing', user);
+});
+
+socket.on('stop typing', (user) => {
+  socket.broadcast.emit('stop typing', user);
+});
+
 });
 
 const PORT = process.env.PORT || 10000;
 server.listen(PORT, () => console.log(`🚀 Server running at http://localhost:${PORT}`));
+
 
 
