@@ -23,6 +23,8 @@
   <script>
     const socket = io();
     let username = "";
+    let typing = false;
+    let timeout;
 
     fetch('/api/session')
       .then(res => res.json())
@@ -64,3 +66,4 @@
   </script>
 </body>
 </html>
+
