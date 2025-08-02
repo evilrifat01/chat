@@ -1,4 +1,4 @@
-require('.env').config(); // load .env variables
+require('dotenv').config(); // load .env variables
 
 const express = require('express');
 const mongoose = require('mongoose');
@@ -189,4 +189,5 @@ io.on('connection', socket => {
 
 const PORT = process.env.PORT || 10000;
 server.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+
 
