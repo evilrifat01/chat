@@ -21,23 +21,30 @@
   <script>
     document.getElementById('loginForm').onsubmit = async (e) => {
       e.preventDefault();
-      const username = document.getElementById('username').value;
-      const password = document.getElementById('password').value;
-      const res = await fetch('/api/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password })
-      });
+    const username = document.getElementById('username').value;
+    const password = document.getElementById('password').value;
+    const msg = document.getElementById('msg');
+    
+    const res = await fetch('/api/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password })
+    });
 
-      const msg = document.getElementById('msg');
-      if (res.ok) {
-        const session = await fetch('/api/session').then(r => r.json());
-        if (session.isAdmin) return location.href = 'admin.html';
-        location.href = 'chat.html';
-      } else {
-        msg.textContent = await res.text();
+    if (res.ok) {
+      const session = await fetch('/api/session').then(r => r.json());
+
+      if (!session.isApproved) {
+        msg.textContent = 'Your account is still pending admin approval.';
+        return;
+      }
+
+      location.href = session.isAdmin ? 'admin.html' : 'chat.html';
+    } else {
+      msg.textContent = await res.text();
       }
     };
   </script>
 </body>
 </html>
+
