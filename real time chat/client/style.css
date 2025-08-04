@@ -55,50 +55,33 @@ header {
   margin-bottom: 10px;
 }
 
-const usersList = document.getElementById('users-list');
+.user-card {
+  background: #f9f9f9;
+  border: 1px solid #ddd;
+  padding: 15px;
+  margin: 10px 0;
+  border-radius: 5px;
+}
 
-const logout = () => {
-  fetch('/api/logout').then(() => (window.location.href = '/login.html'));
-};
+.user-card p {
+  margin: 0 0 10px;
+}
 
-const refreshUsers = async () => {
-  const users = await fetch('/api/pending-users').then(r => r.json());
-  usersList.innerHTML = '';
+.user-card button {
+  margin-right: 10px;
+  padding: 8px 12px;
+  background-color: #28a745;
+  border: none;
+  color: white;
+  border-radius: 4px;
+  cursor: pointer;
+}
 
-  if (!users.length) {
-    usersList.textContent = 'No users awaiting approval.';
-    return;
-  }
+.user-card button.delete-btn {
+  background-color: #dc3545;
+}
 
-  users.forEach(user => {
-    const card = document.createElement('div');
-    card.className = 'user-card';
-    card.innerHTML = `
-      <p><strong>${user.username}</strong></p>
-      <button class="approve-btn">Approve</button>
-      <button class="delete-btn">Delete</button>
-    `;
+.user-card button:hover {
+  opacity: 0.9;
+}
 
-    card.querySelector('.approve-btn').onclick = async () => {
-      const res = await fetch(`/api/approve-user/${user._id}`, { method: 'PUT' });
-      if (res.ok) {
-        window.location.href = '/chat.html';
-      } else {
-        alert('Approval failed');
-      }
-    };
-
-    card.querySelector('.delete-btn').onclick = async () => {
-      const res = await fetch(`/api/delete-user/${user._id}`, { method: 'DELETE' });
-      if (res.ok) {
-        refreshUsers();
-      } else {
-        alert('Delete failed');
-      }
-    };
-
-    usersList.appendChild(card);
-  });
-};
-
-refreshUsers();
