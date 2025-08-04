@@ -1,5 +1,0 @@
-MONGO_URL=mongodb+srv://refat:refat97113@cluster0.q42r8kx.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
-SESSION_SECRET=Zx7!p@9vR$L2m#qW4&NtXeYbFs3H8Cu
-RECAPTCHA_SECRET=6Lcj8ZcrAAAAABfPOY2wVSslZwwI2TXG16ak7r1N
-ADMIN_USERNAME=admin
-ADMIN_PASSWORD=adminpass
