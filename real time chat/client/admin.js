@@ -8,33 +8,39 @@ const refreshUsers = async () => {
   const users = await fetch('/api/pending-users').then(r => r.json());
   usersList.innerHTML = '';
 
-  users.forEach(user => {
-    const div = document.createElement('div');
-    div.textContent = user.username;
+  if (!users.length) {
+    usersList.textContent = 'No users awaiting approval.';
+    return;
+  }
 
-    const approveBtn = document.createElement('button');
-    approveBtn.textContent = 'Approve';
-    approveBtn.onclick = async () => {
+  users.forEach(user => {
+    const card = document.createElement('div');
+    card.className = 'user-card';
+    card.innerHTML = `
+      <p><strong>${user.username}</strong></p>
+      <button class="approve-btn">Approve</button>
+      <button class="delete-btn">Delete</button>
+    `;
+
+    card.querySelector('.approve-btn').onclick = async () => {
       const res = await fetch(`/api/approve-user/${user._id}`, { method: 'PUT' });
       if (res.ok) {
-        // Redirect to chat page after successful approval
         window.location.href = '/chat.html';
       } else {
-        const data = await res.json();
-        alert(data.message || 'Approval failed');
+        alert('Approval failed');
       }
     };
 
-    const deleteBtn = document.createElement('button');
-    deleteBtn.textContent = 'Delete';
-    deleteBtn.onclick = async () => {
-      await fetch(`/api/delete-user/${user._id}`, { method: 'DELETE' });
-      refreshUsers();
+    card.querySelector('.delete-btn').onclick = async () => {
+      const res = await fetch(`/api/delete-user/${user._id}`, { method: 'DELETE' });
+      if (res.ok) {
+        refreshUsers();
+      } else {
+        alert('Delete failed');
+      }
     };
 
-    div.appendChild(approveBtn);
-    div.appendChild(deleteBtn);
-    usersList.appendChild(div);
+    usersList.appendChild(card);
   });
 };
 
